@@ -81,8 +81,11 @@
 <body>
     <form id="form-demo">
         <div class="header" tabindex="-1"><h1>show error message to screen reader</h1></div>
+        <div>
+            <input id="optional-info" type="text" value="" placeholder="optional info" aria-label="input some optional info...">
+        </div>
         <div id="page1" class="page active">
-            <div class="error" aria-live="assertive" id="error-p1"></div>
+            <div class="error" aria-live="polite" id="error-p1"></div>
             <fieldset aria-labelledby="info-p1">
                 <legend id="info-p1">Q-1 Select only one option:</legend>
                 <label aria-label="Select only one option: option 1.">
@@ -100,7 +103,7 @@
             </fieldset>
         </div>
         <div id="page2" class="page">
-            <div class="error" aria-live="assertive" id="error-p2"></div>
+            <div class="error" aria-live="polite" "error-p2"></div>
             <fieldset aria-labelledby="info-p2">
                 <legend id="info-p2">Q-2 Select one or more options:</legend>
                 <label>
@@ -141,6 +144,7 @@
             var pageId=1;
             var btnPrev=q1('#btnPrev');
             var btnNext=q1('#btnNext');
+            var optionalInfo=q1("#optional-info");
 
             function id(id){
                 return document.getElementById(id);
@@ -203,7 +207,7 @@
 
                 if(!checked)
                     focusonoption(page);
-                    
+
                 hideorshowerror(page, !checked);
 
                 return checked;
@@ -241,7 +245,8 @@
             function focusonoption(question){
                 let ele=q1('input[type="radio"], input[type="checkbox"]', question);
                 if(ele)
-                    ele.focus();
+                    // ele.focus();
+                    optionalInfo.focus();
             }
 
             bindevent();
