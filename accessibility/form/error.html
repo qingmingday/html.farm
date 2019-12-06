@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>error too screen reader</title>
+    <style>
+        body{
+            font-size: 16px;
+            line-height: 2rem;
+        }
+
+        form{
+            margin: 0 auto;
+            max-width: 800px;
+            background-color: lightblue;
+            overflow: hidden;
+        }
+
+        fieldset{
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        legend{
+            display: block;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        fieldset label{
+            display: block;
+        }
+
+        input[type='button']{
+            line-height: 2rem;
+            height: 2rem;
+        }
+
+        input:focus:not([type="button"])~*{
+            font-weight: bold;
+            text-shadow: 1px 0px 2px red;
+        }
+
+        h1{
+            display: block;
+            margin: 0;
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+    </style>
+
+    <style>
+        .page{
+            background-color: lightgreen;
+            visibility: hidden;
+            position: absolute;
+            z-index: -9;
+        }
+
+        .page.active{
+            visibility: visible;
+            position: static;
+            z-index: 0;
+        }
+
+        .error{
+            color:orangered;
+        }
+    </style>
+</head>
+<body>
+    <form id="form-demo">
+        <div class="header" tabindex="-1"><h1>show error message to screen reader</h1></div>
+        <div id="page1" class="page active">
+            <div class="error" aria-live="assertive" id="error-p1"></div>
+            <fieldset aria-labelledby="info-p1">
+                <legend id="info-p1">Q-1 Select only one option:</legend>
+                <label aria-label="Select only one option: option 1.">
+                    <input type="radio" name="rg1" id="rg1o1">
+                    <span>option 1</span>
+                </label>
+                <label aria-label="Select only one option: option 2.">
+                    <input type="radio" name="rg1" id="rg1o2">
+                    <span>option 2</span>
+                </label>
+                <label aria-label="Select only one option: option 3.">
+                    <input type="radio" name="rg1" id="rg1o3">
+                    <span>option 3</span>
+                </label>
+            </fieldset>
+        </div>
+        <div id="page2" class="page">
+            <div class="error" aria-live="assertive" id="error-p2"></div>
+            <fieldset aria-labelledby="info-p2">
+                <legend id="info-p2">Q-2 Select one or more options:</legend>
+                <label>
+                    <input type="checkbox" name="rg2" id="rg2c1">
+                    <span>checkbox option 1</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="rg2" id="rg2c2">
+                    <span>checkbox option 2</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="rg2" id="rg2c3">
+                    <span>checkbox option 3</span>
+                </label>
+            </fieldset>
+        </div>
+        <div id="page3" class="page">
+            <div>Here is the last page! Done.</div>
+        </div>
+        <div class="controls">
+            <!-- <button type="button" id="btnPrev">previous page</button>
+            <button type="button" id="btnNext">next page</button> -->
+
+            <!-- <button id="btnPrev">previous page</button>
+            <button id="btnNext">next page</button> -->
+
+            <input id="btnPrev" type="button" value="previous page">
+            <input id="btnNext" type="button" value="next page">
+        </div>
+    </form>
+
+    <script>
+        window.addEventListener("load", ()=>{console.log('on load');})
+
+        var module=(function(formid){
+            var form=id(formid);
+            var pageId=1;
+            var btnPrev=q1('#btnPrev');
+            var btnNext=q1('#btnNext');
+
+            function id(id){
+                return document.getElementById(id);
+            }
+
+            function q1(selector, ele){
+                if(!ele)
+                    ele=form;
+
+                return ele.querySelector(selector);
+            }
+
+            function qa(selector, ele){
+                if(!ele)
+                    ele=form;
+                
+                return ele.querySelectorAll(selector);
+            }
+
+            function showpage(pageid){
+                let page=q1('#'+pageid);
+                page.classList.add('active');
+            }
+
+            function hidepage(pageid){
+                let page=q1('#'+pageid);
+                page.classList.remove('active');
+            }
+
+            function nextpage(){
+                if(pageId>=3)
+                    return;
+
+                if(!verify())
+                    return;
+                
+                hidepage('page'+pageId);
+                showpage('page'+(pageId+1));
+                pageId++;
+            }
+
+            function prevpage(){
+                if(pageId<=1)
+                    return;
+                
+                hidepage('page'+pageId);
+                showpage('page'+(pageId-1));
+                pageId--;
+            }
+
+            function verify(){
+                let page=q1('.page.active');
+                let checked=true;
+                if(pageId===1){
+                    checked=verifyRadioButtons(page);
+                }
+                if(pageId===2){
+                    checked=verifyCheckboxes(page);
+                }
+
+                hideorshowerror(page, !checked);
+                if(!checked)
+                    focusonoption(page);
+
+                return checked;
+            }
+
+            function hideorshowerror(page, isshow){
+                let pageError=q1('.error', page);
+                if(isshow)
+                    pageError.innerHTML='please complete the question.';
+                else
+                pageError.innerHTML="";
+            }
+
+            function bindevent(){
+                btnPrev.addEventListener('click', prevpage);
+                btnNext.addEventListener('click', nextpage);
+            }
+
+            function verifyRadioButtons(page){
+                let ele=q1('input[type="radio"]:checked', page);
+                if(!ele)
+                    return false;
+                else
+                    return true;
+            }
+
+            function verifyCheckboxes(page){
+                let ele=q1('input[type="checkbox"]:checked', page);
+                if(!ele)
+                    return false;
+                else
+                    return true;
+            }
+
+            function focusonoption(question){
+                let ele=q1('input[type="radio"], input[type="checkbox"]', question);
+                if(ele)
+                    ele.focus();
+            }
+
+            bindevent();
+        })('form-demo');
+    </script>
+</body>
+</html>
